@@ -1,0 +1,33 @@
+node
+{
+def mavenHome = tool name: "maven3.8.6"
+stage( 'CheckoutCode')
+{
+git branch: 'development', credentialsId: '9c7a753f-778d-4ccc-b4d5-c703c91866fb', url: 'https://github.com/akky143/maven-web-application.git'
+}
+
+stage ( 'Build')
+{
+sh "${mavenHome}/bin/mvn clean package"
+}
+*/stage ( 'Excuitesonarqubereport' )
+{
+sh "${mavenHome}/bin/mvn sonar:sonar"
+}
+stage ( 'Uplaodintonexus' )
+{
+sh "${mavenHome}/bin/mvn deploy"
+}
+stage( 'deployintotomcat' )
+sshagent(['975dfd4a-816e-4db3-80e7-6779447e2d13']) {
+sh "scp -o strictHostkeyCheking=no target/maven-web-application.war ec2-user@35.170.203.169:/opt/apache-tomcat-10.0.22/webapps/"     
+}
+stage( 'emailnotification' )
+{
+mail bcc: '', body: '''Biuld Over
+
+Regards,
+ashok.d''', cc: 'detaashok29@gmail.com', from: '', replyTo: '', subject: 'Biuld Over', to: 'deta.ashok@gmail.com'
+}
+/*
+}
